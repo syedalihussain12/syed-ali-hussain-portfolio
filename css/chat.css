@@ -1,5 +1,4 @@
-.hira{--hira-fg:#fff}
-@media(prefers-color-scheme:dark){.hira{--hira-fg:#0e1420}}
+.hira{--hira-fg:var(--on-acc,#fff)}
 .hira-toggle{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom,0px));z-index:20;background:var(--acc);color:var(--hira-fg);border:0;border-radius:999px;padding:.75rem 1.2rem;font:600 1rem var(--sans);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .hira-toggle:hover{filter:brightness(.92)}
 .hira-panel{position:fixed;right:1rem;bottom:calc(4.5rem + env(safe-area-inset-bottom,0px));z-index:20;width:min(380px,calc(100vw - 2rem));height:min(520px,calc(100vh - 7rem));display:flex;flex-direction:column;background:var(--surf);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.3);overflow:hidden}
