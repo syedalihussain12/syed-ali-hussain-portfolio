@@ -8,138 +8,107 @@
 <meta property="og:title" content="Syed Ali Hussain Atif | AI Researcher">
 <meta property="og:description" content="NLP, machine learning, fake news detection and AI agents.">
 <meta property="og:type" content="website">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d4ed8'/%3E%3Ctext x='16' y='22' font-size='16' font-family='Georgia' font-weight='700' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230369a1'/%3E%3Ctext x='16' y='22' font-size='16' font-family='Georgia' font-weight='700' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<script>try{var t=localStorage.getItem('theme');document.documentElement.setAttribute('data-theme',t||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'))}catch(e){}</script>
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/chat.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="top">
-  <div class="wrap bar">
-    <a class="brand" href="#home">Syed Ali Hussain Atif</a>
-    <button class="menu" aria-expanded="false" aria-controls="nav">Menu</button>
-    <nav id="nav" aria-label="Main">
-      <a href="#about">About</a><a href="#research">Research</a><a href="#projects">Projects</a>
-      <a href="#services">Services</a><a href="#skills">Skills</a><a href="#experience">Experience</a><a href="#contact">Contact</a>
-    </nav>
-  </div>
-</header>
+<header class="top"><div class="wrap bar">
+  <a class="brand" href="#home">Ali<span>.</span></a>
+  <nav id="nav" aria-label="Main"><a href="#about">About</a><a href="#skills">Skills</a><a href="#services">Services</a><a href="#projects">Projects</a><a href="#experience">Experience</a><a href="#contact">Contact</a></nav>
+  <div class="tools"><button id="theme" type="button" class="pill">Dark</button><button class="menu pill" type="button" aria-expanded="false" aria-controls="nav">Menu</button></div>
+</div></header>
 <main id="main">
 <section id="home" class="hero wrap">
-  <div>
+  <div class="hero-text">
+    <p class="kicker">Hello, I am</p>
     <h1>Syed Ali Hussain Atif</h1>
     <p class="role">AI Researcher in NLP, Machine Learning and AI Agents</p>
     <p class="lead">MS in Artificial Intelligence from Air University, Islamabad. I build NLP models that detect fake news, and AI agents that do useful work for businesses.</p>
-    <p class="actions">
-      <a class="btn primary" href="#projects">View projects</a>
-      <a class="btn" href="#contact">Contact me</a>
-      <a class="btn" href="assets/Syed_Ali_Hussain_Atif_CV.pdf" download>Download CV</a>
-    </p>
-    <p class="links"><a href="https://github.com/syedalihussain12" target="_blank" rel="noopener noreferrer">GitHub</a> <a href="https://linkedin.com/in/syed-ali-hussain-atif" target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
+    <p class="actions"><a class="btn primary" href="#projects">View projects</a><a class="btn" href="#contact">Contact me</a><a class="btn ghost" href="assets/Syed_Ali_Hussain_Atif_CV.pdf" download>Download CV</a></p>
   </div>
-  <aside class="stat" aria-label="Thesis result">
-    <p class="num">97.27%</p>
-    <p class="cap">Best accuracy on the WELFake dataset in my MS thesis on fake news detection</p>
-  </aside>
-</section>
-
-<section id="about" class="wrap sec">
-  <h2>About</h2>
-  <div class="cols">
-    <p>I am an AI researcher with an MS in Artificial Intelligence from Air University, Islamabad (2026). My work focuses on fake news detection using NLP, machine learning and social network analysis. I built and benchmarked SVM, LSTM and BERT classifiers and used Explainable AI to make predictions transparent.</p>
-    <p>I also build AI agents and chatbots. Before moving into AI I worked in e-commerce and digital marketing, which gives me a practical view of how AI can help real businesses.</p>
-  </div>
-  <dl class="facts">
-    <div><dt>Based in</dt><dd>Islamabad, Pakistan</dd></div>
-    <div><dt>MS</dt><dd>Artificial Intelligence, Air University (2024 to 2026)</dd></div>
-    <div><dt>BS</dt><dd>Information Technology, GCU Faisalabad (2019 to 2023)</dd></div>
-  </dl>
-</section>
-
-<section id="research" class="wrap sec">
-  <h2>Research</h2>
-  <article class="item">
-    <h3>Fake News Detection: NLP, ML and Social Network Analysis</h3>
-    <p class="meta">MS thesis, Air University, Islamabad, 2026</p>
-    <ul>
-      <li>Built and benchmarked SVM, LSTM and BERT classifiers on the WELFake dataset, reaching up to 97.27% accuracy with bigram TF-IDF features and an ensemble of Logistic Regression, Random Forest and SVM.</li>
-      <li>Designed Social Network Analysis pipelines to model how fake news spreads across online networks.</li>
-      <li>Applied Explainable AI (XAI) to make model predictions transparent and interpretable.</li>
-    </ul>
-    <p class="tags"><span>NLP</span><span>BERT</span><span>LSTM</span><span>SVM</span><span>XAI</span><span>Social Network Analysis</span></p>
-  </article>
-</section>
-
-<section id="projects" class="wrap sec">
-  <h2>Projects</h2>
-  <article class="item">
-    <h3>Nova: AI lead collection agent <span class="badge">Demo project</span></h3>
-    <p class="meta">Voiceflow, LLM, Google Sheets</p>
-    <p>A conversational agent that collects lead details and saves each lead as a structured row in Google Sheets through tool integration. Its prompt has guardrails: one question at a time, no invented prices, and no save confirmation unless the tool succeeds. It handles incomplete emails and English or Roman Urdu input.</p>
-    <p><a class="textlink" href="https://github.com/syedalihussain12/nova-ai-lead-collection-agent" target="_blank" rel="noopener noreferrer">View on GitHub</a></p>
-    <!-- TODO: add assets/nova-chat.png and assets/nova-workflow.png, then show them here. -->
-  </article>
-  <article class="item">
-    <h3>Hira: the AI assistant on this website <span class="badge">Live</span></h3>
-    <p class="meta">Groq API, Vercel serverless, Google Sheets</p>
-    <p>The chat assistant on this page. It answers questions about my research, skills and services, and collects project inquiries into Google Sheets. It runs on its own backend: a serverless API on Vercel that calls the Groq API with tool calling. Guardrails: it answers only from verified facts, validates emails on the server, limits request rates, and never says an inquiry is saved unless the save succeeded. API keys stay in environment variables.</p>
-    <p><button type="button" class="textlink linkbtn" data-open-hira>Chat with Hira</button> <a class="textlink" href="https://github.com/syedalihussain12/syed-ali-hussain-portfolio" target="_blank" rel="noopener noreferrer">View source on GitHub</a></p>
-  </article>
-  <article class="item">
-    <h3>Fake news detection thesis</h3>
-    <p>Benchmarking SVM, LSTM and BERT with explainable predictions. <a class="textlink" href="#research">Read the summary</a></p>
-    <!-- TODO: add the GitHub link for the thesis code when it is published. -->
-  </article>
-</section>
-
-<section id="services" class="wrap sec">
-  <h2>Services</h2>
-  <p class="intro">I help small businesses and teams with AI and online growth.</p>
-  <div class="grid">
-    <article class="svc"><h3>AI chatbot and agent development</h3><p>Chatbots and AI agents built with Voiceflow and prompt engineering. They answer questions, collect leads and save them to tools like Google Sheets.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20AI%20Chatbot%20Development">Request a quote</a></article>
-    <article class="svc"><h3>NLP and machine learning</h3><p>Text classification, model benchmarking and explainable results using Python, PyTorch, scikit-learn and Hugging Face Transformers.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20NLP%20and%20Machine%20Learning">Request a quote</a></article>
-    <article class="svc"><h3>SEO and digital marketing</h3><p>YouTube and Fiverr SEO, keyword research, Meta Ads campaigns with A/B testing and ROI tracking, and content calendars.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20SEO%20and%20Digital%20Marketing">Request a quote</a></article>
-    <article class="svc"><h3>Amazon e-commerce support</h3><p>FBM seller account management, product research with Jungle Scout and Helium 10, and listing optimization with A+ content.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20Amazon%20E-Commerce%20Support">Request a quote</a></article>
+  <div class="hero-art">
+    <svg class="deco d1" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 4 36 34H4z" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+    <svg class="deco d2" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 6v28M6 20h28" stroke="currentColor" stroke-width="4"/></svg>
+    <svg class="deco d3" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="14" fill="none" stroke="currentColor" stroke-width="4"/></svg>
+    <div class="dots" aria-hidden="true"></div>
+    <div class="portrait"><img src="assets/profile.jpg" alt="Syed Ali Hussain Atif" width="400" height="400"></div>
+    <div class="badge-card"><strong>97.27%</strong><span>Best accuracy on WELFake</span></div>
   </div>
 </section>
 
-<section id="skills" class="wrap sec">
-  <h2>Skills</h2>
-  <dl class="skills">
-    <dt>AI and NLP</dt><dd>BERT, LSTM, SVM, Explainable AI (XAI), HuggingFace Transformers, Text Mining</dd>
-    <dt>AI agents</dt><dd>Voiceflow, Groq API, Prompt Engineering, Tool Calling, Google Sheets Integration</dd>
-    <dt>ML and data</dt><dd>Python, PyTorch, scikit-learn, Social Network Analysis</dd>
-    <dt>Web</dt><dd>Next.js, JavaScript, Git, GitHub, Vercel</dd>
-    <dt>Marketing and SEO</dt><dd>Meta Ads, A/B Testing, Content Strategy, Audience Targeting, Keyword Research, YouTube SEO, Fiverr SEO</dd>
-    <dt>E-commerce</dt><dd>Amazon FBA/FBM, Jungle Scout, Helium 10, A+ Content Optimization</dd>
-    <dt>Tools</dt><dd>Canva, MS Office Suite</dd>
-  </dl>
+<section id="about" class="sec wrap">
+  <p class="kicker">About me</p><h2>An AI researcher who builds things that work</h2>
+  <div class="about">
+    <div>
+      <p>I hold an MS in Artificial Intelligence from Air University, Islamabad (2026). My work focuses on fake news detection using NLP, machine learning and social network analysis. I built and benchmarked SVM, LSTM and BERT classifiers and used Explainable AI to make predictions transparent.</p>
+      <p>I also build AI agents and chatbots. Before moving into AI I worked in e-commerce and digital marketing, which gives me a practical view of how AI can help real businesses.</p>
+    </div>
+    <dl class="facts"><div><dt>Based in</dt><dd>Islamabad, Pakistan</dd></div><div><dt>MS</dt><dd>Artificial Intelligence, Air University (2024 to 2026)</dd></div><div><dt>BS</dt><dd>Information Technology, GCU Faisalabad (2019 to 2023)</dd></div></dl>
+  </div>
+  <div class="stats">
+    <div class="stat"><strong>97.27%</strong><span>Best accuracy on the WELFake dataset</span></div>
+    <div class="stat"><strong>MS AI</strong><span>Air University, 2026</span></div>
+    <div class="stat"><strong>3</strong><span>Model families benchmarked: SVM, LSTM, BERT</span></div>
+    <div class="stat"><strong>2</strong><span>AI agents built: Nova and Hira</span></div>
+  </div>
 </section>
 
-<section id="experience" class="wrap sec">
-  <h2>Experience and education</h2>
+<section id="skills" class="sec alt"><div class="wrap">
+  <p class="kicker">Skills</p><h2>Tools and methods I work with</h2>
+  <div class="skill-groups">
+    <div><h3>AI and NLP</h3><p class="chips"><span>BERT</span><span>LSTM</span><span>SVM</span><span>Explainable AI</span><span>Hugging Face</span><span>Text Mining</span></p></div>
+    <div><h3>AI agents</h3><p class="chips"><span>Voiceflow</span><span>Groq API</span><span>Prompt Engineering</span><span>Tool Calling</span><span>Google Sheets</span></p></div>
+    <div><h3>ML and data</h3><p class="chips"><span>Python</span><span>PyTorch</span><span>scikit-learn</span><span>Social Network Analysis</span></p></div>
+    <div><h3>Web</h3><p class="chips"><span>Next.js</span><span>JavaScript</span><span>Git</span><span>GitHub</span><span>Vercel</span></p></div>
+    <div><h3>Marketing and SEO</h3><p class="chips"><span>Meta Ads</span><span>A/B Testing</span><span>Keyword Research</span><span>YouTube SEO</span><span>Fiverr SEO</span></p></div>
+    <div><h3>E-commerce</h3><p class="chips"><span>Amazon FBA/FBM</span><span>Jungle Scout</span><span>Helium 10</span><span>A+ Content</span></p></div>
+  </div>
+</div></section>
+
+<section id="services" class="sec wrap">
+  <p class="kicker">Services</p><h2>What I can do for you</h2>
+  <div class="cards">
+    <article class="svc"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M5 7h22v14H14l-6 5v-5H5z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg><h3>AI chatbots and agents</h3><p>Chatbots and AI agents built with prompt engineering. They answer questions, collect leads and save them to tools like Google Sheets.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20AI%20Chatbot%20Development">Request a quote</a></article>
+    <article class="svc"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="8" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="24" cy="9" r="3" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="16" cy="24" r="3" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M10.5 11l4 10M21.5 11l-4 10M11 9h10" stroke="currentColor" stroke-width="2.4" fill="none"/></svg><h3>NLP and machine learning</h3><p>Text classification, model benchmarking and explainable results using Python, PyTorch, scikit-learn and Hugging Face.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20NLP%20and%20Machine%20Learning">Request a quote</a></article>
+    <article class="svc"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="14" cy="14" r="8" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M20 20l7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><h3>SEO and digital marketing</h3><p>YouTube and Fiverr SEO, keyword research, Meta Ads campaigns with A/B testing and ROI tracking, and content calendars.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20SEO%20and%20Digital%20Marketing">Request a quote</a></article>
+    <article class="svc"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 4l11 6v12l-11 6-11-6V10z M5 10l11 6 11-6 M16 16v12" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></svg><h3>Amazon e-commerce support</h3><p>FBM seller account management, product research with Jungle Scout and Helium 10, and listing optimization with A+ content.</p><a class="textlink" href="mailto:syedalihussainatif@gmail.com?subject=Quote%20request%3A%20Amazon%20E-Commerce%20Support">Request a quote</a></article>
+  </div>
+</section>
+
+<section id="projects" class="sec alt"><div class="wrap">
+  <p class="kicker">Projects</p><h2>Selected work</h2>
+  <div class="cards three">
+    <article class="proj"><p class="meta">Groq API, Vercel, Google Sheets</p><h3>Hira, the AI assistant on this site <span class="tag">Live</span></h3><p>Answers questions about my research, skills and services, and collects project inquiries into Google Sheets. It runs on its own serverless backend and calls the Groq API with tool calling. It answers only from verified facts, validates emails on the server, limits request rates and never says an inquiry is saved unless the save succeeded.</p><p><button type="button" class="textlink linkbtn" data-open-hira>Chat with Hira</button><a class="textlink" href="https://github.com/syedalihussain12/syed-ali-hussain-portfolio" target="_blank" rel="noopener noreferrer">View source</a></p></article>
+    <article class="proj"><p class="meta">Voiceflow, LLM, Google Sheets</p><h3>Nova, AI lead collection agent <span class="tag">Demo</span></h3><p>A conversational agent that collects lead details and saves each lead as a structured row in Google Sheets through tool integration. It asks one question at a time, never invents prices, and handles incomplete emails and English or Roman Urdu input.</p><p><a class="textlink" href="https://github.com/syedalihussain12/nova-ai-lead-collection-agent" target="_blank" rel="noopener noreferrer">View on GitHub</a></p></article>
+    <article class="proj"><p class="meta">MS thesis, Air University, 2026</p><h3>Fake news detection</h3><p>Benchmarked SVM, LSTM and BERT on the WELFake dataset, reaching up to 97.27% accuracy with bigram TF-IDF features and an ensemble of Logistic Regression, Random Forest and SVM. Designed Social Network Analysis pipelines and applied Explainable AI.</p><p class="chips"><span>NLP</span><span>BERT</span><span>XAI</span><span>SNA</span></p></article>
+  </div>
+  <!-- TODO: add the GitHub link for the thesis code when it is published. -->
+</div></section>
+
+<section id="experience" class="sec wrap">
+  <p class="kicker">Experience and education</p><h2>My journey</h2>
   <ol class="timeline">
     <li><p class="when">2024 to 2026</p><h3>MS Artificial Intelligence</h3><p class="meta">Air University, Islamabad. Thesis: Fake News Detection (NLP, ML, SNA)</p></li>
     <li><p class="when">Jun 2022 to Dec 2023</p><h3>Freelance digital marketing, e-commerce and SEO</h3>
-      <ul>
-        <li><strong>Amazon Virtual Assistant and Trainer:</strong> managed FBM seller accounts, ran product research with Jungle Scout and Helium 10, optimized listings with A+ content, and trained and mentored junior virtual assistants.</li>
-        <li><strong>Digital marketing:</strong> ran Meta Ads campaigns with A/B testing and ROI tracking, built content calendars and managed audience targeting across social platforms.</li>
-        <li><strong>SEO:</strong> YouTube and Fiverr SEO covering metadata, tags and ranking optimization, plus keyword research and competitor analysis.</li>
-      </ul></li>
+      <ul><li><strong>Amazon Virtual Assistant and Trainer:</strong> managed FBM seller accounts, ran product research with Jungle Scout and Helium 10, optimized listings with A+ content, and trained and mentored junior virtual assistants.</li>
+      <li><strong>Digital marketing:</strong> ran Meta Ads campaigns with A/B testing and ROI tracking, built content calendars and managed audience targeting across social platforms.</li>
+      <li><strong>SEO:</strong> YouTube and Fiverr SEO covering metadata, tags and ranking optimization, plus keyword research and competitor analysis.</li></ul></li>
     <li><p class="when">2019 to 2023</p><h3>BS Information Technology</h3><p class="meta">Government College University Faisalabad</p></li>
   </ol>
 </section>
 
-<section id="contact" class="wrap sec">
-  <h2>Contact</h2>
-  <p class="intro">Open to AI, ML and NLP roles and freelance projects. Let's talk.</p>
-  <dl class="skills">
-    <dt>Email</dt><dd><a class="textlink" href="mailto:syedalihussainatif@gmail.com">syedalihussainatif@gmail.com</a></dd>
-    <dt>LinkedIn</dt><dd><a class="textlink" href="https://linkedin.com/in/syed-ali-hussain-atif" target="_blank" rel="noopener noreferrer">linkedin.com/in/syed-ali-hussain-atif</a></dd>
-    <dt>GitHub</dt><dd><a class="textlink" href="https://github.com/syedalihussain12" target="_blank" rel="noopener noreferrer">github.com/syedalihussain12</a></dd>
-    <dt>Location</dt><dd>Islamabad, Pakistan</dd>
+<section id="contact" class="sec alt"><div class="wrap contact">
+  <div><p class="kicker">Contact</p><h2>Let's talk</h2><p class="lead">Open to AI, ML and NLP roles and freelance projects. Write to me, or ask Hira.</p><p class="actions"><a class="btn primary" href="mailto:syedalihussainatif@gmail.com">Email me</a><button type="button" class="btn" data-open-hira>Chat with Hira</button></p></div>
+  <dl class="facts">
+    <div><dt>Email</dt><dd><a class="textlink" href="mailto:syedalihussainatif@gmail.com">syedalihussainatif@gmail.com</a></dd></div>
+    <div><dt>LinkedIn</dt><dd><a class="textlink" href="https://linkedin.com/in/syed-ali-hussain-atif" target="_blank" rel="noopener noreferrer">linkedin.com/in/syed-ali-hussain-atif</a></dd></div>
+    <div><dt>GitHub</dt><dd><a class="textlink" href="https://github.com/syedalihussain12" target="_blank" rel="noopener noreferrer">github.com/syedalihussain12</a></dd></div>
+    <div><dt>Location</dt><dd>Islamabad, Pakistan</dd></div>
   </dl>
-</section>
+</div></section>
 </main>
 <footer class="wrap foot"><span>&copy; 2026 Syed Ali Hussain Atif</span><a href="#home">Back to top</a></footer>
 <script src="js/main.js"></script>
