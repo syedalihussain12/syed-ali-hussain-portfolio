@@ -74,7 +74,10 @@ Ask ONE question at a time, never repeating a question, and wait for the visitor
 1) full name, 2) describe the project or work they need in a full sentence (if the answer is only one or two words like "chatbot", ask them to describe what it should do), 3) which service (AI Chatbot and Agent Development, NLP and Machine Learning, SEO and Digital Marketing, or Amazon E-Commerce Support), 4) expected timeline (if vague like "soon", ask for an approximate time such as "2 weeks"), 5) budget (optional), 6) email address (say first that Ali will use it only to reply).
 Use only what the visitor actually typed. Never invent, shorten or fill in any detail yourself.
 An email must look like name@domain.com. If it does not, say it looks incomplete and ask the visitor to type the full address. Never guess or complete it yourself.
-Then summarize the details in a short list (Name, Requirements, Service, Timeline, Budget, Email) and ask "Is this correct?". If the visitor corrects something, update it and confirm again. After a clear yes, call save_lead exactly once.
+Do not call review_lead until the visitor has personally answered questions 1, 2, 3, 4 and 6 (and either answered or skipped 5). Never fill a missing answer yourself: if something was not answered, ask for it. Copy each detail exactly as the visitor typed it.
+When all answers are in, call review_lead with the details. Do NOT write the summary yourself: the system shows it and asks "Is this correct?". If the tool returns an error, ask the visitor only for the detail it names.
+If the visitor corrects something, call review_lead again with the update. After the visitor clearly says yes to the summary, call save_lead exactly once.
+Do not use markdown or asterisks in any reply.
 Say the details are saved only if the tool returns ok. If it returns an error, do not claim anything was saved; ask the visitor for the missing or corrected detail, and if that is not possible apologize and give ${CONTACT}.`;
 
 const SERVICES = ['AI Chatbot and Agent Development', 'NLP and Machine Learning', 'SEO and Digital Marketing', 'Amazon E-Commerce Support'];
@@ -98,6 +101,7 @@ const TOOLS = [{
     }
   }
 }];
+TOOLS.unshift({ type: 'function', function: { name: 'review_lead', description: 'Check the collected details and show the visitor a summary to confirm. Use only after the visitor answered every question themselves.', parameters: TOOLS[0].function.parameters } });
 
 // Map whatever the model sends (any casing / wording) to one of the four official service names.
 function normalizeService(v) {
@@ -113,32 +117,61 @@ function normalizeService(v) {
 
 const GENERIC_REQ = /^(hire|hire ali|hire him|i want to hire ali|chatbot|chatbot assistant|a chatbot|project|work|test|service|help|yes|no)$/i;
 
-// Reject details the visitor never actually typed, or answers that are clearly not a real requirement.
-function validateLead(lead, msgs) {
-  const userText = msgs.filter(m => m.role === 'user').map(m => m.content).join('\n').toLowerCase();
-  const asked = msgs.some(m => m.role === 'assistant' && /is this correct/i.test(m.content));
-  if (!asked) return 'The visitor has not confirmed a summary yet. Show the summary, ask "Is this correct?" and wait for a yes.';
-  if (!userText.includes(lead.email.toLowerCase())) return 'That email was not typed by the visitor. Ask them to type their email address.';
-  const firstName = lead.name.toLowerCase().split(/\s+/)[0];
-  if (!userText.includes(firstName)) return 'That name was not given by the visitor. Ask for their full name.';
+const NUMWORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twelve: 12 };
+const IGNORE = new Set(['usd', 'dollar', 'rs', 'pkr', 'optional', 'approx', 'approximately', 'around', 'about', 'the', 'a', 'an']);
+function toks(str) {
+  return String(str || '').toLowerCase().replace(/(\d),(?=\d)/g, '$1').replace(/\b[a-z]+\b/g, w => NUMWORDS[w] != null ? String(NUMWORDS[w]) : w)
+    .match(/[a-z0-9\u0600-\u06ff]+/g || []) || [];
+}
+function stem(t) { return t.length > 3 ? t.replace(/s$/, '') : t; }
+// Share of the value's words that the visitor actually typed.
+function overlap(value, userText) {
+  const have = new Set(toks(userText).map(stem));
+  const want = toks(value).map(stem).filter(t => !IGNORE.has(t));
+  if (!want.length) return 1;
+  return want.filter(t => have.has(t)).length / want.length;
+}
+
+// Reject details the visitor never typed, or answers that are clearly not a real requirement.
+function groundingProblem(lead, msgs) {
+  const userText = msgs.filter(m => m.role === 'user').map(m => m.content).join('\n');
+  if (!userText.toLowerCase().includes(lead.email.toLowerCase())) return 'The email was not typed by the visitor. Ask them for their email address.';
+  if (!userText.toLowerCase().includes(lead.name.toLowerCase().split(/\s+/)[0])) return 'The name was not given by the visitor. Ask for their full name.';
   const words = lead.requirements.split(/\s+/).filter(Boolean);
   if (GENERIC_REQ.test(lead.requirements.trim()) || words.length < 3) {
-    return 'The project requirement is too vague. Ask the visitor to describe in a full sentence what they need built or done. "I want to hire Ali" is not a requirement.';
+    return 'The project requirement is too vague. Ask the visitor to describe in a full sentence what they need. "I want to hire Ali" is not a requirement.';
   }
+  if (overlap(lead.requirements, userText) < 0.6) return 'The requirements do not match what the visitor said. Ask them to describe the project.';
+  if (overlap(lead.timeline, userText) < 1) return 'The timeline was not given by the visitor. Ask for their expected timeline.';
+  if (lead.budget !== 'Not provided' && overlap(lead.budget, userText) < 1) return 'The budget was not given by the visitor. Ask if they have a budget, or whether to skip it.';
   return null;
 }
 
-async function saveLead(a, msgs) {
-  const f = k => String(a && a[k] != null ? a[k] : '').trim().replace(/\s+/g, ' ').slice(0, 500);
-  const lead = { name: f('name'), email: f('email'), service: normalizeService(f('service')), requirements: f('requirements'), timeline: f('timeline'), budget: f('budget') || 'Not provided' };
-  if (!lead.name || !lead.service || !lead.requirements || !lead.timeline) {
-    return { ok: false, error: 'Missing details. Ask the visitor for the missing information.' };
-  }
-  if (!EMAIL_RE.test(lead.email)) {
-    return { ok: false, error: 'The email looks incomplete or invalid. Ask the visitor to type the full address.' };
-  }
-  const problem = validateLead(lead, msgs);
+function cleanLead(a) {
+  const f = k => String(a && a[k] != null ? a[k] : '').trim().replace(/\s+/g, ' ').replace(/\*+/g, '').slice(0, 500);
+  return { name: f('name'), email: f('email'), service: normalizeService(f('service')), requirements: f('requirements'), timeline: f('timeline'), budget: f('budget') || 'Not provided' };
+}
+function basicProblem(lead) {
+  if (!lead.name || !lead.service || !lead.requirements || !lead.timeline) return 'Missing details. Ask the visitor for the missing information.';
+  if (!EMAIL_RE.test(lead.email)) return 'The email looks incomplete or invalid. Ask the visitor to type the full address.';
+  return null;
+}
+
+// Shows the summary built by the server from validated details, so the model cannot add anything of its own.
+function reviewLead(a, msgs) {
+  const lead = cleanLead(a);
+  const problem = basicProblem(lead) || groundingProblem(lead, msgs);
   if (problem) return { ok: false, error: problem };
+  return { ok: true, summary: 'Here is what I have so far:\n\nName: ' + lead.name + '\nRequirements: ' + lead.requirements + '\nService: ' + lead.service + '\nTimeline: ' + lead.timeline + '\nBudget: ' + lead.budget + '\nEmail: ' + lead.email + '\n\nIs this correct?' };
+}
+
+async function saveLead(a, msgs) {
+  const lead = cleanLead(a);
+  const problem = basicProblem(lead) || groundingProblem(lead, msgs);
+  if (problem) return { ok: false, error: problem };
+  if (!msgs.some(m => m.role === 'assistant' && /is this correct/i.test(m.content))) {
+    return { ok: false, error: 'The visitor has not confirmed a summary yet. Call review_lead first and wait for a yes.' };
+  }
   const r = await fetch(process.env.SHEET_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -170,7 +203,7 @@ module.exports = async function handler(req, res) {
 
   try {
     for (let i = 0; i < 3; i++) {
-      const payload = { messages: convo, temperature: 0.3, max_tokens: 1024 };
+      const payload = { messages: convo, temperature: 0.2, max_tokens: 1024 };
       if (!saved) { payload.tools = TOOLS; payload.tool_choice = 'auto'; }
       const r = await callGroq(payload);
       if (!r.ok) {
@@ -180,12 +213,19 @@ module.exports = async function handler(req, res) {
       const data = await r.json();
       const msg = data.choices && data.choices[0] && data.choices[0].message;
       if (!msg) throw new Error('Empty model response');
-      if (!msg.tool_calls || !msg.tool_calls.length) return res.status(200).json({ reply: msg.content || '', saved });
+      if (!msg.tool_calls || !msg.tool_calls.length) return res.status(200).json({ reply: (msg.content || '').replace(/\*\*/g, ''), saved });
 
       convo.push({ role: 'assistant', content: msg.content || '', tool_calls: msg.tool_calls });
       for (const tc of msg.tool_calls) {
         let result;
-        if (tc.function.name !== 'save_lead') result = { ok: false, error: 'Unknown tool.' };
+        if (tc.function.name === 'review_lead' && !saved) {
+          try {
+            const rv = reviewLead(JSON.parse(tc.function.arguments), msgs);
+            if (rv.ok) return res.status(200).json({ reply: rv.summary, saved });
+            result = rv;
+          } catch (e) { result = { ok: false, error: 'Review failed.' }; }
+        }
+        else if (tc.function.name !== 'save_lead') result = { ok: false, error: 'Unknown tool.' };
         else if (saved) result = { ok: false, error: 'A lead was already saved in this conversation.' };
         else {
           try { result = await saveLead(JSON.parse(tc.function.arguments), msgs); }
