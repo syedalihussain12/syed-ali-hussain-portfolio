@@ -1,6 +1,6 @@
 (function () {
   var EMAIL = 'syedalihussainatif@gmail.com';
-  var MAX_MESSAGES = 24;
+  var MAX_MESSAGES = 60;
   var messages = [], saved = false, busy = false, speakOn = false, listening = false, rec = null;
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var synth = window.speechSynthesis;
