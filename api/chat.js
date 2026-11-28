@@ -84,29 +84,23 @@ const START_TOOL = {
 // The model talks naturally, but the server keeps track of what is already known (from the whole chat),
 // tells the model the one detail to ask next, and builds the final summary and the save itself.
 const SERVICES = ['AI Chatbot and Agent Development', 'NLP and Machine Learning', 'SEO and Digital Marketing', 'Amazon E-Commerce Support'];
-const ORDER = ['name', 'requirements', 'service', 'timeline', 'budget', 'email'];
-const HINT = {
-  name: 'their full name',
-  requirements: 'what the project should do, described in a sentence or two (not just "hire Ali")',
-  service: 'which service fits best. List the four options as a numbered list: 1. ' + SERVICES[0] + ' 2. ' + SERVICES[1] + ' 3. ' + SERVICES[2] + ' 4. ' + SERVICES[3],
-  timeline: 'their expected timeline; an approximate time such as "2 weeks" is fine',
-  budget: 'their budget; say it is optional and they can skip it',
-  email: 'their email address; say Ali will use it only to reply to them'
-};
-const FALLBACK_Q = {
+// The questions are asked in this exact order, one at a time, with these exact words.
+const ORDER = ['name', 'service', 'requirements', 'email', 'budget', 'timeline'];
+const Q = {
   name: 'May I have your full name, please?',
-  requirements: 'Please describe in a sentence or two what you need built or done.',
-  service: 'Which service fits best?\n1. ' + SERVICES[0] + '\n2. ' + SERVICES[1] + '\n3. ' + SERVICES[2] + '\n4. ' + SERVICES[3],
-  timeline: 'What timeline do you expect? An approximate time is fine, for example "2 weeks".',
+  service: 'Which service do you need? Reply with a number:\n1. ' + SERVICES[0] + '\n2. ' + SERVICES[1] + '\n3. ' + SERVICES[2] + '\n4. ' + SERVICES[3],
+  requirements: 'Please describe your requirements: what should it do? A sentence or two is fine.',
+  email: 'What is your email address? Ali will use it only to reply to you. You can also say it aloud, like "name at gmail dot com".',
   budget: 'Do you have a budget in mind? It is optional, you can type "skip".',
-  email: 'What is your email address? Ali will use it only to reply to you.'
+  timeline: 'What timeline do you expect? An approximate time is fine, for example "2 weeks".'
 };
+const INTRO = 'Happy to help. I will ask a few quick questions so Ali can get back to you.\n\n';
 const CHANGE_Q = 'Sure. Which detail should I change: name, requirements, service, timeline, budget or email?';
 const CANCEL_TEXT = 'No problem. Ask me anything about Ali, or tap "I want to hire Ali" whenever you are ready.';
 const SUMMARY_START = 'Here is what I have so far:';
 
-const HIRE_RE = /\b(hire|hiring|quote|quotation|work with (ali|you|him)|get in touch|contact me|call me|i have a project|my project|i need (a|an) )/i;
-const LEAD_Q_RE = /(your full name|email address|expected timeline|what timeline|budget in mind|which service fits|is this correct\?)/i;
+const HIRE_RE = /\b(hire|hiring|quote|quotation|work with (ali|you|him)|get in touch|contact me|call me|reach me|i have a project|my project|(need|want|looking for) (a|an) (chatbot|bot|agent|website|seo|marketing|ai)|can you (build|make|create|develop)|build (me|us) (a|an))/i;
+const LEAD_Q_RE = /(your full name|which service do you need|describe your requirements|your email address|budget in mind|what timeline do you expect|is this correct\?)/i;
 const CANCEL_RE = /^(cancel|stop|never ?mind|no thanks|forget it|exit)\W*$/i;
 const YES_RE = /^(yes|y|yeah|yep|yup|correct|right|ok|okay|sure|confirm|confirmed|haan|han|ji|jee|ji haan|theek|theek hai|sahi|bilkul|done)\b/i;
 const NO_RE = /^(no|nope|nahi|wrong|galat|change)\W*$/i;
@@ -116,7 +110,9 @@ const GENERIC_REQ = /^(hire|hire ali|hire him|i want to hire ali|chatbot|chatbot
 
 function normalizeService(v) {
   const t = String(v || '').toLowerCase().trim();
-  if (/^[1-4]\W*$/.test(t)) return SERVICES[Number(t[0]) - 1];
+  const word = { one: 1, two: 2, three: 3, four: 4, first: 1, second: 2, third: 3, fourth: 4 };
+  const pick = t.match(/^(?:option |number |no\.? |choice )?([1-4]|one|two|three|four|first|second|third|fourth)\W*$/);
+  if (pick) return SERVICES[(word[pick[1]] || Number(pick[1])) - 1];
   const exact = SERVICES.find(x => x.toLowerCase() === t);
   if (exact) return exact;
   if (/chat|agent|bot|voiceflow|automation/.test(t)) return SERVICES[0];
@@ -241,7 +237,7 @@ function fieldsMentioned(text) {
 }
 
 function summary(d) {
-  return SUMMARY_START + '\n\nName: ' + d.name + '\nRequirements: ' + d.requirements + '\nService: ' + d.service + '\nTimeline: ' + d.timeline + '\nBudget: ' + d.budget + '\nEmail: ' + d.email + '\n\nIs this correct?';
+  return SUMMARY_START + '\n\nName: ' + d.name + '\nService: ' + d.service + '\nRequirements: ' + d.requirements + '\nEmail: ' + d.email + '\nBudget: ' + d.budget + '\nTimeline: ' + d.timeline + '\n\nIs this correct?';
 }
 
 async function postLead(lead) {
@@ -268,70 +264,139 @@ async function sideAnswer(text) {
   } catch (e) { return ''; }
 }
 
-// The model writes the next question naturally, but only for the one detail the server names.
-async function askNext(msgs, data, missing, notes) {
-  const known = ORDER.filter(f => data[f] != null).map(f => f + ': ' + data[f]).join('; ') || 'nothing yet';
-  const sys = SYSTEM_PROMPT +
-    '\n\nYou are now collecting a project inquiry for Ali.\nAlready collected (never ask for these again): ' + known + '.\n' +
-    'Next detail needed: ' + missing + ' (' + HINT[missing] + ').\n' + notes.join(' ') + '\n' +
-    'Rules: ask only for that one detail, in one short question. You may acknowledge what the visitor just said in one short sentence. If the visitor asked you something, answer it first in one or two sentences using only the facts, then ask your question. Never ask for several details at once. Do not write a summary. Do not use markdown or asterisks.';
-  let recent = msgs.slice(-10);
-  while (recent.length && recent[0].role !== 'user') recent.shift();
-  try {
-    const r = await callGroq({ messages: [{ role: 'system', content: sys }].concat(recent), temperature: 0.3, max_tokens: 500 });
-    if (r.ok) {
-      const d = await r.json();
-      let reply = ((d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || '').replace(/\*\*/g, '').trim();
-      if (reply) {
-        const q = reply.indexOf('?');
-        if (q !== -1 && reply.indexOf('?', q + 1) !== -1 && missing !== 'service') reply = reply.slice(0, q + 1);
-        if (missing === 'service' && !/\b1\./.test(reply)) reply += '\n\n' + FALLBACK_Q.service;
-        return reply;
-      }
-    }
-  } catch (e) { console.error('askNext failed', e.message); }
-  return FALLBACK_Q[missing];
+// Reads one answer for one field. Returns { value } or { error }.
+function parseAnswer(field, text) {
+  const t = String(text || '').trim().replace(/\s+/g, ' ').replace(/\*+/g, '');
+  if (field === 'name') {
+    const n = t.replace(/^(my name is|this is|i am|i'm|im|mera naam|naam|main)\s+/i, '').replace(/\s+(hai|hoon|hun)$/i, '').replace(/[.,!]+$/, '').trim();
+    if (n.length < 2 || n.length > 50 || n.split(' ').length > 4 || /[@\d?]/.test(n) || !/[a-z\u0600-\u06ff]/i.test(n)) return { error: 'Please tell me just your name, for example "Ahmed Khan".' };
+    return { value: n };
+  }
+  if (field === 'service') {
+    const v = normalizeService(t);
+    return v ? { value: v } : { error: 'I could not match that to one of the services. Please reply with a number from 1 to 4.' };
+  }
+  if (field === 'requirements') {
+    if (GENERIC_REQ.test(t) || t.split(' ').length < 3) return { error: 'That is a bit short for me to pass on. Please describe in a sentence what you need.' };
+    return { value: t.slice(0, 500) };
+  }
+  if (field === 'email') {
+    const e = findEmails(t);
+    return e.length ? { value: e[e.length - 1] } : { error: 'That email looks incomplete. Please type or say the full address, like name@gmail.com.' };
+  }
+  if (field === 'budget') {
+    if (!t || SKIP_RE.test(t)) return { value: 'Not provided' };
+    return { value: t.slice(0, 100) };
+  }
+  if (field === 'timeline') {
+    if (t.length < 2 || VAGUE_RE.test(t)) return { error: 'Please give an approximate time, such as "2 weeks" or "1 month".' };
+    return { value: t.slice(0, 100) };
+  }
+  return { error: 'Unexpected answer.' };
 }
 
-async function leadTurn(msgs) {
-  const text = msgs[msgs.length - 1].content.trim();
-  if (CANCEL_RE.test(text)) return { reply: CANCEL_TEXT, lead: false };
-  const prev = msgs.length > 1 ? msgs[msgs.length - 2] : null;
-  const onSummary = !!(prev && prev.role === 'assistant' && prev.content.indexOf(SUMMARY_START) === 0);
+function pendingOf(content) {
+  if (content.indexOf(SUMMARY_START) === 0) return 'confirm';
+  if (content.endsWith(CHANGE_Q)) return 'change';
+  for (const f of ORDER) if (content.endsWith(Q[f])) return f;
+  return null;
+}
 
-  if (onSummary && NO_RE.test(text)) return { reply: CHANGE_Q };
-
-  const { data, notes } = await getState(msgs);
-
-  // The visitor said which detail to change: ask for just that one (their new answer will replace the old one).
-  if (prev && prev.role === 'assistant' && prev.content.endsWith(CHANGE_Q)) {
-    const hits = fieldsMentioned(text);
-    if (!hits.length) return { reply: 'I did not catch that. ' + CHANGE_Q };
-    const d2 = Object.assign({}, data); d2[hits[0]] = null;
-    return { reply: await askNext(msgs, d2, hits[0], []) };
+// Fallback for a browser that does not send its state: rebuild it from the chat, because the questions are fixed.
+function replay(msgs) {
+  let data = {}, pending = null;
+  for (const m of msgs) {
+    if (m.role === 'assistant') {
+      if (m.content === CANCEL_TEXT) data = {};
+      pending = pendingOf(m.content);
+    } else if (pending) {
+      const t = m.content.trim();
+      if (!t.includes('?') && !CANCEL_RE.test(t)) {
+        if (pending === 'change') fieldsMentioned(t).forEach(f => { delete data[f]; });
+        else if (pending !== 'confirm') { const r = parseAnswer(pending, t); if (r.value != null) data[pending] = r.value; }
+      }
+      pending = null;
+    }
   }
+  return { known: data, asked: pending };
+}
 
-  const missing = ORDER.find(f => data[f] == null);
+function cleanKnown(k) {
+  const d = {};
+  ORDER.forEach(f => {
+    let v = k && typeof k[f] === 'string' ? k[f].trim().slice(0, 500) : '';
+    if (f === 'email' && !EMAIL_RE.test(v)) v = '';
+    if (f === 'service' && SERVICES.indexOf(v) === -1) v = '';
+    d[f] = v || null;
+  });
+  return d;
+}
 
-  if (!missing) {
-    if (onSummary && text.length < 30 && YES_RE.test(text)) {
+// One step of the intake. The browser sends back what we already know (known) and what we asked last (asked).
+async function leadTurn(msgs, known, asked) {
+  const text = msgs[msgs.length - 1].content.trim();
+  if (CANCEL_RE.test(text)) return { reply: CANCEL_TEXT, lead: false, known: null, asked: null };
+  if (asked !== 'confirm' && asked !== 'change' && ORDER.indexOf(asked) === -1) asked = null;
+  const data = cleanKnown(known);
+  const out = (reply, ask) => ({ reply: reply, lead: true, known: data, asked: ask });
+  const next = prefix => {
+    const missing = ORDER.find(f => data[f] == null);
+    return missing ? out(prefix + Q[missing], missing) : out(prefix + summary(data), 'confirm');
+  };
+
+  if (asked === 'confirm') {
+    if (text.length < 30 && YES_RE.test(text)) {
       const lead = {}; ORDER.forEach(f => { lead[f] = data[f]; });
       let ok = false;
       try { ok = await postLead(lead); } catch (e) { console.error('save failed', e.message); }
       return ok
-        ? { reply: 'Thank you, ' + data.name.split(' ')[0] + '! Your details are saved and Ali will reply to you by email.', saved: true }
-        : { reply: 'Sorry, I could not save your details right now. Please email Ali at ' + CONTACT + '.' };
+        ? { reply: 'Thank you, ' + data.name.split(' ')[0] + '! Your details are saved and Ali will reply to you by email.', saved: true, lead: false, known: null, asked: null }
+        : { reply: 'Sorry, I could not save your details right now. Please email Ali at ' + CONTACT + '.', lead: false, known: null, asked: null };
     }
-    const ans = text.includes('?') ? await sideAnswer(text) : '';
-    return { reply: (ans ? ans + '\n\n' : '') + summary(data) };
+    if (NO_RE.test(text)) return out(CHANGE_Q, 'change');
+    const em = findEmails(text);
+    if (em.length) { data.email = em[em.length - 1]; return out(summary(data), 'confirm'); }
+    if (text.includes('?')) { const ans = await sideAnswer(text); return out((ans ? ans + '\n\n' : '') + summary(data), 'confirm'); }
+    return out(CHANGE_Q, 'change');
   }
-  return { reply: await askNext(msgs, data, missing, notes) };
+
+  if (asked === 'change') {
+    const hits = fieldsMentioned(text);
+    if (!hits.length) return out('I did not catch that. ' + CHANGE_Q, 'change');
+    hits.forEach(f => { data[f] = null; });
+    return next('');
+  }
+
+  // The visitor asked something instead of answering: answer it, then repeat the same question.
+  if (asked && text.includes('?')) {
+    const ans = await sideAnswer(text);
+    return out((ans ? ans + '\n\n' : '') + Q[asked], asked);
+  }
+
+  // A long message may hold several details at once: let the model pick them out (best effort, always checked).
+  const rich = text.split(/\s+/).length >= 6;
+  if (rich) {
+    try {
+      const st = await getState(msgs.slice(-8));
+      ORDER.forEach(f => { if (data[f] == null && st.data[f] != null) data[f] = st.data[f]; });
+    } catch (e) { /* the fixed questions still work without it */ }
+  }
+  const em = findEmails(text);
+  if (em.length) data.email = em[em.length - 1];
+  if (asked) {
+    const r = parseAnswer(asked, text);
+    if (r.value != null) data[asked] = r.value;
+    else if (data[asked] == null) return out(r.error + '\n\n' + Q[asked], asked);
+  }
+  return next(asked ? '' : INTRO);
 }
 
 const EMAIL_IN_TEXT = /[^@\s]+@[^@\s]+\.[^@\s]{2,}/;
 const NAME_RE = /\b(my name is|mera naam|i am called)\b/i;
+// If the free chat model starts collecting details or claims something was saved, the server takes over.
+const INTAKE_RE = /(your (full )?name\b|what('s| is) your name|your email|email address|contact (details|info|information)|your budget|budget (in mind|range)|your timeline|expected timeline)/i;
+const CLAIM_RE = /((recorded|saved|noted|received|forwarded|passed on).{0,50}(details|information|inquiry|enquiry|request))|((details|information|inquiry|enquiry).{0,40}(recorded|saved|noted))|lead process/i;
 
-// The browser sends lead:true once the server has started an intake, so we never lose track of it.
 function leadActive(msgs, flagged) {
   let start = 0;
   msgs.forEach((m, i) => { if (m.role === 'assistant' && m.content === CANCEL_TEXT) start = i + 1; });
@@ -355,12 +420,14 @@ module.exports = async function handler(req, res) {
   if (!msgs.length || msgs[msgs.length - 1].role !== 'user') return res.status(400).json({ error: 'Bad request' });
 
   const saved = body.saved === true;
+  const reply = o => res.status(200).json({ reply: o.reply, saved: o.saved === true, lead: o.lead === true, known: o.known || null, asked: o.asked || null });
   try {
     if (!saved) {
       const { active, part } = leadActive(msgs, body.lead === true);
       if (active) {
-        const out = await leadTurn(part);
-        return res.status(200).json({ reply: out.reply, saved: out.saved === true, lead: out.lead !== false });
+        let known = body.known, asked = body.asked;
+        if (!known || typeof known !== 'object') { const r = replay(part.slice(0, -1)); known = r.known; asked = r.asked; }
+        return reply(await leadTurn(part, known, asked));
       }
     }
 
@@ -377,12 +444,15 @@ module.exports = async function handler(req, res) {
     const data = await r.json();
     const msg = data.choices && data.choices[0] && data.choices[0].message;
     if (!msg) throw new Error('Empty model response');
-    if (!saved && msg.tool_calls && msg.tool_calls.some(t => t.function && t.function.name === 'start_lead')) {
-      const out = await leadTurn(msgs);
-      return res.status(200).json({ reply: out.reply, saved: out.saved === true, lead: out.lead !== false });
+    const text = (msg.content || '').replace(/\*\*/g, '').trim();
+    const startsIntake = !saved && ((msg.tool_calls && msg.tool_calls.some(t => t.function && t.function.name === 'start_lead')) ||
+      (INTAKE_RE.test(text) && text.includes('?')) || CLAIM_RE.test(text));
+    if (startsIntake) {
+      let known = {};
+      try { known = (await getState(msgs)).data; } catch (e) { /* start from scratch */ }
+      return reply(await leadTurn(msgs, known, null));
     }
-    const reply = (msg.content || '').replace(/\*\*/g, '').trim();
-    return res.status(200).json({ reply: reply || 'Sorry, I could not answer that. Please email Ali at ' + CONTACT + '.', saved, lead: false });
+    return reply({ reply: text || 'Sorry, I could not answer that. Please email Ali at ' + CONTACT + '.', saved: saved });
   } catch (e) {
     console.error('Chat error', e.message);
     return res.status(502).json({ error: 'Hira is unavailable right now. Please email Ali at ' + CONTACT + '.' });
