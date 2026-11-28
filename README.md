@@ -2,14 +2,13 @@
 
 Plain HTML, CSS and JavaScript. No build step.
 
-## Preview
-Double-click `index.html`.
+## Files
+- `index.html`, `style.css`, `script.js`: the site (dark gold theme) and the Hira chat widget
+- `assets/`: portrait, Hira images, CV
+- `api/chat.js`: Hira backend (Vercel serverless function, calls the Groq API)
 
-## Deploy
-- GitHub Pages: push this folder to a repo, then Settings > Pages > Deploy from branch `main`.
-- Vercel or Netlify: import the repo, no build command needed.
+## Environment variables (Vercel)
+`GROQ_API_KEY`, `SHEET_URL`, `SHEET_SECRET` (same as before)
 
 ## To do
-- Add `assets/nova-chat.png` and `assets/nova-workflow.png`, then show them in the Nova project.
-- Paste the Voiceflow chat widget snippet before `</body>` in `index.html`.
-- Add the GitHub link for the thesis code when it is published.
+- Add the GitHub link for the thesis code when it is published (see the comment in `index.html`).
