@@ -32,7 +32,7 @@
 
   /* ---------- Hira chat (same behaviour and API contract as before) ---------- */
   var MAX_MESSAGES = 60;
-  var messages = [], saved = false, busy = false, speakOn = false, listening = false, rec = null;
+  var messages = [], saved = false, lead = false, busy = false, speakOn = false, listening = false, rec = null;
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var synth = window.speechSynthesis;
 
@@ -86,11 +86,30 @@
     return row;
   }
 
+  // Hira is a woman, so pick a female voice when the device has one.
+  var FEMALE = /(female|zira|aria|jenny|samantha|karen|moira|tessa|victoria|susan|hazel|libby|sonia|natasha|catherine|fiona|veena|heera|kalpana|priya|uzma|salma|michelle|emma|ava|allison|joanna|kimberly|ivy|amy|salli|nicole|raveena|serena|zoe|ellen|sara|laura)/i;
+  var MALE = /(\bmale\b|david|mark|guy|ryan|george|james|richard|daniel|alex|fred|asad|ravi|hemant|thomas|brian|eric|liam|matthew|joey|justin|kevin|russell|geraint|rishi|oliver|arthur|aaron)/i;
+  function pickVoice(code) {
+    if (!synth || !synth.getVoices) return null;
+    var base = code.slice(0, 2).toLowerCase(), want = code.toLowerCase(), best = null, bestScore = -99;
+    synth.getVoices().forEach(function (v) {
+      var l = String(v.lang || '').replace('_', '-').toLowerCase();
+      if (l.indexOf(base) !== 0) return;
+      var sc = (l === want ? 3 : 0) + (FEMALE.test(v.name) ? 10 : 0) - (MALE.test(v.name) ? 10 : 0) + (/online|natural|neural/i.test(v.name) ? 2 : 0);
+      if (sc > bestScore) { bestScore = sc; best = v; }
+    });
+    return best ? { voice: best, female: FEMALE.test(best.name) && !MALE.test(best.name) } : null;
+  }
+  if (synth) synth.onvoiceschanged = function () { synth.getVoices(); };
   function speak(t) {
     if (!speakOn || !synth) return;
     synth.cancel();
     var u = new SpeechSynthesisUtterance(t);
     u.lang = lang.value;
+    var pick = pickVoice(lang.value);
+    if (pick) u.voice = pick.voice;
+    u.pitch = pick && pick.female ? 1.05 : 1.3; // no female voice on this device: raise the pitch
+    u.rate = 1;
     synth.speak(u);
   }
 
@@ -118,7 +137,7 @@
     add('user', text);
     busy = true; sendBtn.disabled = true;
     var typing = typingEl();
-    fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages, saved: saved }) })
+    fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages, saved: saved, lead: lead }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
       .then(function (res) {
         typing.remove();
@@ -128,6 +147,7 @@
           return;
         }
         saved = res.data.saved === true;
+        lead = res.data.lead === true;
         messages.push({ role: 'assistant', content: res.data.reply });
         add('assistant', res.data.reply);
         speak(res.data.reply);
