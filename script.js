@@ -32,7 +32,7 @@
 
   /* ---------- Hira chat (same behaviour and API contract as before) ---------- */
   var MAX_MESSAGES = 60;
-  var messages = [], saved = false, lead = false, busy = false, speakOn = false, listening = false, rec = null;
+  var messages = [], saved = false, lead = false, known = null, asked = null, busy = false, speakOn = false, listening = false, rec = null;
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var synth = window.speechSynthesis;
 
@@ -137,7 +137,7 @@
     add('user', text);
     busy = true; sendBtn.disabled = true;
     var typing = typingEl();
-    fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages, saved: saved, lead: lead }) })
+    fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages: messages, saved: saved, lead: lead, known: known, asked: asked }) })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
       .then(function (res) {
         typing.remove();
@@ -148,6 +148,8 @@
         }
         saved = res.data.saved === true;
         lead = res.data.lead === true;
+        known = res.data.known || null;
+        asked = res.data.asked || null;
         messages.push({ role: 'assistant', content: res.data.reply });
         add('assistant', res.data.reply);
         speak(res.data.reply);
